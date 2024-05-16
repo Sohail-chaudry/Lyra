@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyra Music</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* dark gray */
+            color: #fff;
+        }
+
+        header {
+            background-color: #000; /* black */
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #000; /* black */
+            color: #fff;
+            padding: 10px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        section {
+            margin-bottom: 30px;
+        }
+
+        .track-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 20px;
+        }
+
+        .track {
+            background-color: #333; /* dark gray */
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .track-name {
+            flex: 1;
+        }
+
+        .play-btn {
+            background-color: #1db954; /* shocking green */
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        .play-btn:hover {
+            background-color: #28a745; /* darker shade of shocking green */
+        }
+
+        .music-player {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #000;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .music-player button {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0 20px;
+        }
+
+        .music-player button:hover {
+            color: #1db954;
+        }
+
+        .current-track {
+            display: block;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lyra Music</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Music</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section>
+            <h2>Featured Tracks</h2>
+            <div id="featured-tracks" class="track-list">
+                <!-- Featured tracks will be displayed here -->
+            </div>
+        </section>
+        <section>
+            <h2>Latest Releases</h2>
+            <div id="latest-releases" class="track-list">
+                <!-- Latest releases will be displayed here -->
+            </div>
+        </section>
+    </main>
+    <div class="music-player" id="music-player">
+        <span class="current-track" id="current-track">No track playing</span>
+        <button id="prev-btn">&#9664;&#9664;</button>
+        <button id="play-pause-btn">&#9654;</button>
+        <button id="next-btn">&#9654;&#9654;</button>
+    </div>
+
+    <script>
+        // Dummy data for tracks (Replace with Spotify API data in real implementation)
+        const tracks = [
+            { name: "Track 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { name: "Track 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { name: "Track 3", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            // Add more tracks as needed
+        ];
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        let audio = new Audio();
+
+        // Function to load a track
+        function loadTrack(index) {
+            audio.src = tracks[index].url;
+            document.getElementById('current-track').innerText = tracks[index].name;
+        }
+
+        // Function to play or pause the track
+        function playPauseTrack() {
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('play-pause-btn').innerHTML = '&#9654;'; // Play symbol
+            } else {
+                audio.play();
+                document.getElementById('play-pause-btn').innerHTML = '&#10074;&#10074;'; // Pause symbol
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Function to play the next track
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+            loadTrack(currentTrackIndex);
+            if (isPlaying) audio.play();
+        }
+
+        // Function to play the previous track
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrackIndex);
+            if (isPlaying) audio.play();
+        }
+
+        // Event listeners for music player controls
+        document.getElementById('play-pause-btn').addEventListener('click', playPauseTrack);
+        document.getElementById('next-btn').addEventListener('click', nextTrack);
+        document.getElementById('prev-btn').addEventListener('click', prevTrack);
+
+        // Initial load
+        loadTrack(currentTrackIndex);
+
+        // JavaScript code to fetch data from Spotify API and display it
+        async function fetchFeaturedTracks() {
+            // Replace with your Spotify API access token
+            const response = await fetch('https://api.spotify.com/v1/browse/featured-playlists', {
+                headers: {
+                    'Authorization': 'Bearer YOUR_ACCESS_TOKEN' // Replace with your Spotify API access token
+                }
+            });
+            const data = await response.json();
+            const featuredTracks = data.playlists.items;
+
+            const featuredTracksContainer = document.getElementById('featured-tracks');
+            featuredTracks.forEach(track => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'track';
+                trackElement.innerHTML = `
+                    <span class="track-name">${track.name}</span>
+                    <a href="#" class="play-btn" data-url="${track.external_urls.spotify}">Play</a>
+                `;
+                featuredTracksContainer.appendChild(trackElement);
+            });
+        }
+
+        // Fetch and display featured tracks on page load
+        fetchFeaturedTracks();
+
+        // PWA install prompt
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPromotion();
+        });
+
+        const showInstallPromotion = () => {
+            const installBtn = document.createElement('button');
+            installBtn.textContent = 'Install Lyra Music';
+            installBtn.style.position = 'fixed';
+            installBtn.style.bottom = '20px';
+            installBtn.style.right = '20px';
+            installBtn.style.backgroundColor = '#1db954';
+            installBtn.style.color = '#fff';
+            installBtn.style.border = 'none';
+            installBtn.style.padding = '10px 20px';
+            installBtn.style.cursor = 'pointer';
+            document.body.appendChild(installBtn);
+
+            installBtn.addEventListener('click', () => {
+                installBtn.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        };
+
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('Lyra Music was installed.');
+        });
+    </script>
+	
+	<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAm5LZhR4Be9irSTSQNLEcF8076G5eOftM",
+    authDomain: "lyra-28350.firebaseapp.com",
+    projectId: "lyra-28350",
+    storageBucket: "lyra-28350.appspot.com",
+    messagingSenderId: "1064652035727",
+    appId: "1:1064652035727:web:d31411c4e7f522749142fa",
+    measurementId: "G-56D8LYWKEK"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+</body>
+</html>
