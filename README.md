@@ -1,2 +1,2 @@
 # Lyra
-A simple music app based on sSpotify API
+A simple music app based on Spotify API
